@@ -1,0 +1,8 @@
+- hosts: docker 
+  tasks:
+
+- name: "yum playbook"
+  import_playbook: "/root/docker10/yum.yml"
+
+- name: "docker file"
+  import_playbook: "/root/docker10/docker.yml"
