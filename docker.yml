@@ -1,0 +1,65 @@
+- hosts: docker
+  gather_facts: no
+
+  tasks:        
+  - name: setting up docker yum conf
+    yum_repository:
+      name: docker
+      description: for docker repo
+      baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+      gpgcheck: no
+ 
+  - name: Docker installation
+    command: "yum install docker-ce --nobest -y"
+
+  - name: starting docker services
+    service: 
+      name: docker
+      state: started
+      enabled: yes
+    register: installation_details
+  
+  - name: Copy file 
+    copy:
+      src: index.html 
+      dest: /var/www/html
+
+  - name: Install python
+    package:
+      name: python3
+      state: present
+
+  - name: to install docker sdk for python
+    pip: 
+     name: docker-py
+
+  - name: To pull httpd server image from docker hub 
+    community.general.docker_image:
+      name: httpd
+      source: pull
+
+  - name: stop firewalld to allow all traffic
+    service:
+      name: firewalld
+      state: stopped
+        
+  - name: filter iptable -F
+    command: sudo iptables -t filter -F
+
+  - name: filter iptable -X
+    command: sudo iptables -t filter -X
+
+  - name: Restart Docker
+    command: systemctl restart docker
+
+  - name: to launch docker container and to do expose to public
+    community.general.docker_container:
+      name: "webtask2"
+      image: "httpd:latest"
+      state: "started"
+      exposed_ports: 
+      - "80" 
+      ports:
+      - "8080:80"
+      volumes:
+      - "/var/www/html:/usr/local/apache2/htdocs/"

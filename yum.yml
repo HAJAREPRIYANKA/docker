@@ -1,0 +1,30 @@
+- name: Yum Configuration
+  gather_facts: no
+  hosts: docker
+
+  tasks: 
+  - name: "Create Directory for yum"
+    file:
+      state: directory
+      path: "/dvd2"
+
+  - name: "Mount The directory"
+    mount:
+      src: "/dev/cdrom"
+      path: "/dvd2"
+      state: mounted
+      fstype: "iso9660"
+
+  - name: "Yum for AppStream"
+    yum_repository:
+      name: "dvd1"
+      baseurl: "/dvd2/AppStream"
+      description: "Yum for AppStream"
+      gpgcheck: no
+
+  - name: "Yum for BaseOs"
+    yum_repository:
+      name: "dvd2"
+      baseurl: "/dvd2/BaseOS"
+      description: "Yum for BaseOs"
+      gpgcheck: no
